@@ -1,8 +1,9 @@
+/* eslint-disable no-useless-return */
 const Card = require('../models/card');
 
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
-  Card.create({ name, link, owener: req.user._id })
+  Card.create({ name, link, owener: req.user })
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -20,9 +21,19 @@ module.exports.getCards = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .orFail(() => Error('NotExist'))
-    .then((card) => res.send({ message: card }))
+    .then((card) => {
+      if (String(card.owener) === String(req.user._id)) {
+        Card.findByIdAndRemove(req.params.cardId)
+          .then(() => res.send({ message: card }));
+      } else {
+        res.status(401).send({
+          message: 'Недостаточно прав',
+        });
+        return;
+      }
+    })
     .catch((err) => {
       if (err.message === 'NotExist') {
         res.status(404).send({ message: 'Объект не найден' });

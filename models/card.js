@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const linkValidator = require('../helpers/helpers');
+const validator = require('validator');
 
 const cardSchema = new mongoose.Schema({
   name: {
@@ -11,7 +11,7 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
-    validate: linkValidator,
+    validate: (link) => validator.isURL(link),
   },
   owener: {
     type: mongoose.Schema.Types.ObjectId,
