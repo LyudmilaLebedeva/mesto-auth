@@ -28,7 +28,7 @@ module.exports.deleteCard = (req, res) => {
         Card.findByIdAndRemove(req.params.cardId)
           .then(() => res.send({ message: card }));
       } else {
-        res.status(401).send({
+        res.status(403).send({
           message: 'Недостаточно прав',
         });
         return;

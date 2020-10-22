@@ -10,12 +10,10 @@ module.exports.createUser = (req, res) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  if (!password) {
-    res.status(400).send({ message: 'Не указан пароль' });
-    return;
-  }
-  if (password.length < MIN_PASSWORD_LENGTH) {
-    res.status(400).send({ message: 'Слишком короткий пароль' });
+  if (!password || password.length < MIN_PASSWORD_LENGTH) {
+    res.status(400).send({
+      message: `Не указан пароль или его длина меньше ${MIN_PASSWORD_LENGTH} символов`,
+    });
     return;
   }
   bcrypt.hash(password, 10)
@@ -24,7 +22,7 @@ module.exports.createUser = (req, res) => {
     }))
     .then((user) => res.send({ id: user._id }))
     .catch((err) => {
-      if (err.code === 11000) {
+      if (err.name === 'MongoError' && err.code === 11000) {
         res.status(409).send({ message: 'Пользователь с таким e-mail уже зарегистрирован' });
       } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: err.message });
