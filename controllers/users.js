@@ -3,12 +3,19 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
+const { NODE_ENV, JWT_SECRET } = process.env;
+const MIN_PASSWORD_LENGTH = 8;
+
 module.exports.createUser = (req, res) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
   if (!password) {
     res.status(400).send({ message: 'Не указан пароль' });
+    return;
+  }
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    res.status(400).send({ message: 'Слишком короткий пароль' });
     return;
   }
   bcrypt.hash(password, 10)
@@ -20,7 +27,7 @@ module.exports.createUser = (req, res) => {
       if (err.code === 11000) {
         res.status(409).send({ message: 'Пользователь с таким e-mail уже зарегистрирован' });
       } else if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        res.status(400).send({ message: err.message });
       } else {
         res.status(500).send({ message: 'На сервере произошла ошибка' });
       }
@@ -66,7 +73,7 @@ module.exports.login = (req, res) => {
       }
       const token = jwt.sign(
         { _id: userID },
-        'some-secret-key',
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
         { expiresIn: '7d' },
       );
       return res.send({ token });
