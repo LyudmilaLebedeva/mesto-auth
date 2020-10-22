@@ -31,10 +31,10 @@ module.exports.getUsers = (req, res) => {
 
 module.exports.getUser = (req, res) => {
   User.findById(req.params.userId)
-    .orFail(() => Error('NotExist'))
+    .orFail()
     .then((user) => res.send({ message: user }))
     .catch((err) => {
-      if (err.message === 'NotExist') {
+      if (err.name === 'DocumentNotFoundError') {
         res.status(404).send({ message: 'Объект не найден' });
       } else if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные' });
