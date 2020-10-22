@@ -7,6 +7,10 @@ module.exports.createUser = (req, res) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
+  if (!password) {
+    res.status(400).send({ message: 'Не указан пароль' });
+    return;
+  }
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
@@ -14,7 +18,7 @@ module.exports.createUser = (req, res) => {
     .then((user) => res.send({ id: user._id }))
     .catch((err) => {
       if (err.code === 11000) {
-        res.status(400).send({ message: 'Пользователь с таким e-mail уже зарегистрирован' });
+        res.status(409).send({ message: 'Пользователь с таким e-mail уже зарегистрирован' });
       } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Переданы некорректные данные' });
       } else {
