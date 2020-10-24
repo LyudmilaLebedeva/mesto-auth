@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const linkValidator = require('../helpers/helpers');
+const validator = require('validator');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -17,7 +17,18 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     required: true,
-    validate: linkValidator,
+    validate: (avatar) => validator.isURL(avatar),
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    validate: (email) => validator.isEmail(email),
+  },
+  password: {
+    type: String,
+    required: true,
+    select: false,
   },
 });
 
